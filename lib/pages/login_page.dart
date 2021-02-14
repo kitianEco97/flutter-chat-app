@@ -1,10 +1,13 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:chat/services/auth_service.dart';
+
 import 'package:chat/widgets/boton_azul.dart';
 import 'package:chat/widgets/labels.dart';
-import 'package:flutter/material.dart';
-
-import 'package:chat/widgets/custom_input.dart';
 import 'package:chat/widgets/logo.dart';
-
+import 'package:chat/widgets/custom_input.dart';
+import 'package:chat/helpers/mostrar_alerta.dart';
 
 class LoginPage extends StatelessWidget {
 
@@ -34,7 +37,7 @@ class LoginPage extends StatelessWidget {
                 Text('Términos y condiciones de uso', style: TextStyle(fontWeight: FontWeight.w200),)
 
               ],
-     ),
+            ),
           ),
         ),
       ),
@@ -54,6 +57,9 @@ class __FormState extends State<_Form> {
 
   @override
   Widget build(BuildContext context) {
+
+    final authService = Provider.of<AuthService>(context);
+
     return Container(
       margin: EdgeInsets.only(top: 40),
       padding: EdgeInsets.symmetric( horizontal: 30 ),
@@ -63,7 +69,7 @@ class __FormState extends State<_Form> {
            CustomInput(
              icon: Icons.mail_outline,
              placeholder: 'Correo',
-             keyboardType: TextInputType.emailAddress,
+             keyboardType: TextInputType.emailAddress, 
              textController: emailCtrl,
            ),
 
@@ -73,12 +79,24 @@ class __FormState extends State<_Form> {
              textController: passCtrl,
              isPassword: true,
            ),
-           
+
             BotonAzul(
-              text: 'Ingrese',
-              onPressed: () {
-                print(emailCtrl.text);
-                print(passCtrl.text);
+             text: 'Ingrese',
+             onPressed: authService.autenticando ? null : () async {                 
+
+              FocusScope.of(context).unfocus();
+
+              final loginOk = await authService.login( emailCtrl.text.trim(), passCtrl.text.trim() );
+
+              if(loginOk){                
+                // TODO: Conectar a nuestro socket service
+                Navigator.pushReplacementNamed(context, 'usuarios');
+                print('Kitian');
+              } else {
+                // Mostrar alerta
+                mostrarAlerta(context, 'Login incorrecto', 'Revise sus credenciales nuevamente');
+              }
+
               },
             )
 
